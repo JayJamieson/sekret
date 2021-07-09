@@ -1,2 +1,2 @@
-# sektret
+# sekret
 sekret store

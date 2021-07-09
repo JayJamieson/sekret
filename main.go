@@ -7,6 +7,7 @@ import (
 
 	"github.com/docker/docker/pkg/namesgenerator"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 var store map[string]Secret = make(map[string]Secret)
@@ -67,6 +68,8 @@ func fetchSecret(c echo.Context) error {
 
 func main() {
 	server := echo.New()
+
+	server.Use(middleware.Logger())
 
 	server.POST("/secret", createSecret)
 	server.GET("/secret/:key", fetchSecret)

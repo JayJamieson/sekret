@@ -1,4 +1,4 @@
-FROM golang:1.16-alpine
+FROM golang:1.16-alpine as build
 
 WORKDIR /app
 
@@ -7,10 +7,14 @@ COPY go.sum .
 
 RUN go mod download
 
-COPY ./ .
+COPY . .
 
-RUN go build -o /sekret
+RUN go build -o /go/bin/sekret
+
+FROM scratch
+
+COPY --from=builder /go/bin/sekret /go/bin/sekret
 
 EXPOSE 8080
 
-CMD ["/sekret"]
+ENTRYPOINT [ "/go/bin/sekret" ]

@@ -50,7 +50,7 @@ jobs:
         id: docker-build
         run: |
           echo "build ${{ steps.prepare.outputs.sekret_image }}"  
-          docker build -t ${{ steps.prepare.outputs.sekret_image }} . --no-cache --rm
+          docker build --build-arg VERSION=${{ steps.prepare.outputs.version }} -t ${{ steps.prepare.outputs.sekret_image }} . --no-cache --rm
 
       - name: Push image
         id: push-image
@@ -58,15 +58,29 @@ jobs:
           docker tag ${{ steps.prepare.outputs.sekret_image }} ${{ steps.prepare.outputs.sekret_image }}:${{ steps.prepare.outputs.version }}
           docker push ${{ steps.prepare.outputs.sekret_image }}:${{ steps.prepare.outputs.version }}
           echo ::set-output name=image::${{ steps.prepare.outputs.sekret_image }}:${{ steps.prepare.outputs.version }}
-  # deploy_to_heroku:
-  #   name: Build docker image and push to repo
-  #   runs-on: ubuntu-latest
 
-# execSync(
-#   `heroku container:push ${dockerHerokuProcessType} --app ${app_name} ${dockerBuildArgs}`,
-#   appdir ? { cwd: appdir } : null
-# );
-# execSync(
-#   `heroku container:release ${dockerHerokuProcessType} --app ${app_name}`,
-#   appdir ? { cwd: appdir } : null
-# );
+  deploy_to_heroku:
+    name: Build docker image and push to repo
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Login to DockerHub and Heroku Container
+        id: docker-login
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:login
+
+      - name: Pull and Push to Heroku
+        id: pull-push-heroku
+        run: |
+          ORG_NAME="jayjamieson"
+          REPO_NAME="sekret"
+          APP_NAME="jay-sekret"
+          docker pull ${ORG_NAME}/${REPO_NAME}:${{ steps.prepare.outputs.version }}
+          docker tag ${ORG_NAME}/${REPO_NAME}:${{ steps.prepare.outputs.version }} registry.heroku.com/jay-sekret/web
+          docker push registry.heroku.com/${APP_NAME}/web
+          heroku container:release web -a ${APP_NAME}

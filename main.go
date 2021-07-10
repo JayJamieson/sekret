@@ -82,5 +82,9 @@ func main() {
 	server.POST("/secret", createSecret)
 	server.GET("/secret/:key", fetchSecret)
 
+	server.GET("/version", func(c echo.Context) error {
+		return c.String(http.StatusOK, os.Getenv("PORT"))
+	})
+
 	server.Logger.Fatal(server.Start(":" + port))
 }

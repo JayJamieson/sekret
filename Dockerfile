@@ -15,6 +15,10 @@ FROM scratch
 COPY --from=builder /sekret .
 
 ENV PORT=8080
+
+ARG VERSION="local"
+ENV ENV_VERSION=$VERSION
+
 EXPOSE 8080
 
 ENTRYPOINT [ "./sekret" ]

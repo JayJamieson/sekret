@@ -77,13 +77,13 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
       - name: Pull and Push to Heroku
         id: pull-push-heroku
         run: |
           ORG_NAME="jayjamieson"
           REPO_NAME="sekret"
           APP_NAME="jay-sekret"
+          echo ::set-output name=version::$(git rev-parse --short HEAD).${GITHUB_RUN_NUMBER}
           docker pull "$ORG_NAME/$REPO_NAME":${{ steps.prepare.outputs.version }}
           docker tag "$ORG_NAME/$REPO_NAME":${{ steps.prepare.outputs.version }} "registry.heroku.com/$APP_NAME/web"
           docker push "registry.heroku.com/$APP_NAME/web"

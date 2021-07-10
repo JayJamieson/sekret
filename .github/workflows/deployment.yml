@@ -91,6 +91,8 @@ jobs:
 
       - name: Pull and Push to Heroku
         id: pull-push-heroku
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: |
           ORG_NAME="jayjamieson"
           REPO_NAME="sekret"

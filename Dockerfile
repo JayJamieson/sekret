@@ -1,20 +1,19 @@
-FROM golang:1.16-alpine as build
+FROM golang:1.16-alpine as builder
 
-WORKDIR /app
+ARG PKG_NAME=github.com/JayJamieson/sekret
 
-COPY go.mod .
-COPY go.sum .
+RUN apk update && apk add --no-cache git ca-certificates && update-ca-certificates
 
-RUN go mod download
+COPY . /go/src/${PKG_NAME}
 
-COPY . .
-
-RUN go build -o /go/bin/sekret
+RUN cd /go/src/${PKG_BASE}/${PKG_NAME} && \
+    CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /sekret
+WORKDIR /dist
 
 FROM scratch
 
-COPY --from=builder /go/bin/sekret /go/bin/sekret
+COPY --from=builder /sekret .
 
 EXPOSE 8080
 
-ENTRYPOINT [ "/go/bin/sekret" ]
+ENTRYPOINT [ "./sekret" ]

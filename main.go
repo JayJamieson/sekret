@@ -1,7 +1,9 @@
 package main
 
 import (
+	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -67,6 +69,12 @@ func fetchSecret(c echo.Context) error {
 }
 
 func main() {
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		log.Fatal("$PORT must be set")
+	}
+
 	server := echo.New()
 
 	server.Use(middleware.Logger())
@@ -74,5 +82,5 @@ func main() {
 	server.POST("/secret", createSecret)
 	server.GET("/secret/:key", fetchSecret)
 
-	server.Logger.Fatal(server.Start(":8080"))
+	server.Logger.Fatal(server.Start(":" + port))
 }

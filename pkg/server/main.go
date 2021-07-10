@@ -1,15 +1,17 @@
 package main
 
 import (
-	"log"
+	"context"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
 	"time"
 
 	"github.com/docker/docker/pkg/namesgenerator"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/gommon/log"
 )
 
 var store map[string]Secret = make(map[string]Secret)
@@ -47,7 +49,7 @@ func createSecret(c echo.Context) error {
 	store[key] = *secret
 
 	// TODO create random easy name ie grizzly-bear, wild-fish...
-	response := &CreatedResponse{key}
+	response := CreatedResponse{key}
 
 	return c.JSON(http.StatusAccepted, response)
 }
@@ -76,6 +78,7 @@ func main() {
 	}
 
 	server := echo.New()
+	server.Logger.SetLevel(log.INFO)
 
 	server.Use(middleware.Logger())
 
@@ -86,5 +89,22 @@ func main() {
 		return c.String(http.StatusOK, os.Getenv("ENV_VERSION"))
 	})
 
-	server.Logger.Fatal(server.Start(":" + port))
+	go func() {
+		if err := server.Start(":" + port); err != nil && err != http.ErrServerClosed {
+			server.Logger.Fatal("Shutting down")
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
+	// Use a buffered channel to avoid missing signals as recommended for signal.Notify
+	quit := make(chan os.Signal, 1)
+
+	signal.Notify(quit, os.Interrupt)
+
+	<-quit
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		server.Logger.Fatal(err)
+	}
 }

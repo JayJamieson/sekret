@@ -8,7 +8,6 @@ COPY . /go/src/${PKG_NAME}
 
 RUN cd /go/src/${PKG_BASE}/${PKG_NAME} && \
     CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /sekret
-WORKDIR /dist
 
 FROM scratch
 

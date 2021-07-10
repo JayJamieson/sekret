@@ -84,7 +84,7 @@ jobs:
           ORG_NAME="jayjamieson"
           REPO_NAME="sekret"
           APP_NAME="jay-sekret"
-          docker pull "$ORG_NAME}/$REPO_NAME":${{ steps.prepare.outputs.version }}
+          docker pull "$ORG_NAME/$REPO_NAME":${{ steps.prepare.outputs.version }}
           docker tag "$ORG_NAME/$REPO_NAME":${{ steps.prepare.outputs.version }} "registry.heroku.com/$APP_NAME/web"
           docker push "registry.heroku.com/$APP_NAME/web"
           heroku container:release web -a $APP_NAME

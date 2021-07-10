@@ -77,6 +77,10 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
       - name: Pull and Push to Heroku
         id: pull-push-heroku
         run: |

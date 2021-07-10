@@ -64,15 +64,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Login to DockerHub and Heroku Container
+      - name: Login to Heroku Container
+        id: heroku-login
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:login
+
+      - name: Login to DockerHub
         id: docker-login
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:login
 
       - name: Pull and Push to Heroku
         id: pull-push-heroku

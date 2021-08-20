@@ -30,7 +30,7 @@ func NewSekret() *Sekret {
 
 func (s *Sekret) CreateSecret(c echo.Context) error {
 
-	createdAt := time.Now().Add(time.Second * time.Duration(10)).UnixNano()
+	createdAt := time.Now().Add(time.Hour * time.Duration(24)).UnixNano()
 
 	secret := &SecretData{
 		CreatedAt: createdAt,

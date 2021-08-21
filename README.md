@@ -1,11 +1,5 @@
 # sekret
-sekret store
-
-docker pull jayjamieson/sekret:version
-
-docker tag jayjamieson/sekret:7d290f4.4 registry.heroku.com/jay-sekret/web
-docker push registry.heroku.com/jay-sekret/web
-heroku container:release web -a jay-sekret
+**Very Simple** secret store. Store a secret to share via self destructing link.
 
 ## Build locally
 
@@ -16,6 +10,8 @@ heroku container:release web -a jay-sekret
 `docker-compose up`
 
 ## Test requests
+
+```bash
 curl --request POST \
   --url http://localhost:8080/secret \
   --header 'content-type: application/json' \
@@ -23,7 +19,20 @@ curl --request POST \
   "data": "mysecret",
   "owner": "owner"
 }'
+```
 
+```bash
 curl --request GET \
   --url https://localhost:8080/secret/sweet_elgamal \
   --header 'content-type: application/json'
+```
+
+## Hosting on heroku
+
+```bash
+docker pull jayjamieson/sekret:<some version>
+
+docker tag <docker hub name>/sekret:<some version> registry.heroku.com/<heroku project>/web
+docker push registry.heroku.com/<heroku project>/web
+heroku container:release web -a <heroku project>
+```

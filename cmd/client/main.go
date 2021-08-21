@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -49,9 +50,37 @@ func (client *Client) fetch(key string) error {
 	return nil
 }
 
-// generate secret, output location and password
-func (client *Client) gen(s string) error {
-	fmt.Println("generating")
+// create secret, output location and password
+func (client *Client) create(password string) error {
+	u := client.endpoint.ResolveReference(&url.URL{Path: "/secret"})
+
+	reqData, err := json.Marshal(map[string]string{"data": password, "owner": "sekret cli"})
+
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.httpClient.Post(
+		u.String(),
+		"application/json",
+		bytes.NewBuffer(reqData))
+
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	var respData map[string]interface{}
+
+	err = json.NewDecoder(resp.Body).Decode(&respData)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("%v/%v\n\n", u.String(), respData["name"])
+
 	return nil
 }
 
@@ -81,8 +110,7 @@ func main() {
 	fs.SetOutput(os.Stdout)
 
 	fs.Func("fetch", "`Secret name` to fetch", client.fetch)
-	// fs.Func("gen", "Generate secret", client.gen)
-	gen := fs.Bool("gen", false, "Generate secret")
+	fs.Func("create", "Generate secret", client.create)
 
 	err = fs.Parse(os.Args[1:])
 
@@ -90,24 +118,4 @@ func main() {
 		fmt.Println(err.Error())
 		return
 	}
-
-	fmt.Printf("%v", *gen)
-
-	//
-	//fileName := filepath.Join(wd, secretName)
-	//fmt.Printf("Writing secret to %v\n", fileName)
-	//
-	//secretFile, err := os.Create(fileName)
-	//
-	//fmt.Printf("Fetching secret by name - %v\n", secretName)
-	//
-	//// TODO http request to fetchin secret
-	//if err != nil {
-	//	panic(err)
-	//}
-	//
-	//defer secretFile.Close()
-	//
-	//secretFile.WriteString("test")
-	//secretFile.Sync()
 }

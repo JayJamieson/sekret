@@ -1,4 +1,6 @@
 # sekret
+[![Deployment](https://github.com/JayJamieson/sekret/actions/workflows/deployment.yml/badge.svg)](https://github.com/JayJamieson/sekret/actions/workflows/deployment.yml)
+
 **Very Simple** secret store. Store a secret to share via self-destructing link on viewing of secret.
 
 ## Build locally
@@ -51,6 +53,8 @@ heroku container:release web -a <heroku project>
 ```
 
 ## TODO
+
+- [ ] Add cli and server auto release creation on push to main
 
 ### CLI 
 - [ ] Parse secret key if URL is provided

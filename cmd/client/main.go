@@ -85,18 +85,17 @@ func (client *Client) create(password string) error {
 }
 
 func main() {
-	viper.SetEnvPrefix("sk")
+	viper.SetEnvPrefix("SK")
 	err := viper.BindEnv("endpoint")
 
 	if err != nil {
-		fmt.Printf("Error binding to endpoint %v\n", err.Error())
-		os.Exit(1)
+		fmt.Printf("Error binding to endpoint going to use default https://sekret.fly.dev/ %v\n", err.Error())
 	}
 
-	u, err := url.Parse(viper.GetString("endpoint"))
+	u, err := url.Parse(getOrDefault("ENDPOINT", "https://sekret.fly.dev/"))
 	if err != nil {
 		fmt.Println(err.Error())
-		return
+		os.Exit(1)
 	}
 
 	client := &Client{
@@ -118,4 +117,14 @@ func main() {
 		fmt.Println(err.Error())
 		return
 	}
+}
+
+func getOrDefault(env string, fallBack string) string {
+	viperString := viper.GetString(env)
+
+	if viperString == "" {
+		return fallBack
+	}
+
+	return viperString
 }

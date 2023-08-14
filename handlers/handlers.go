@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"github.com/JayJamieson/sekret/util"
 	"net/http"
 	"time"
 
-	"github.com/docker/docker/pkg/namesgenerator"
 	"github.com/labstack/echo/v4"
 )
 
@@ -40,10 +40,10 @@ func (s *Sekret) CreateSecret(c echo.Context) error {
 		return err
 	}
 
-	var key string = namesgenerator.GetRandomName(0)
+	var key string = util.GetRandomName(0)
 
 	if _, ok := s.store[key]; ok {
-		key = namesgenerator.GetRandomName(1)
+		key = util.GetRandomName(1)
 	}
 
 	s.store[key] = *secret
@@ -51,7 +51,7 @@ func (s *Sekret) CreateSecret(c echo.Context) error {
 	return c.JSON(http.StatusAccepted, createdResponse{key})
 }
 
-func (s *Sekret) FetchSecret(c echo.Context) error {
+func (s *Sekret) GetSecret(c echo.Context) error {
 	key := c.Param("key")
 
 	secret, ok := s.store[key]

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,7 +18,8 @@ func main() {
 	port := os.Getenv("PORT")
 
 	if port == "" {
-		log.Fatal("$PORT must be set")
+		port = "8080"
+		log.Print("PORT environment variable must be set, defaulted to 8080")
 	}
 
 	server := echo.New()
@@ -29,19 +31,19 @@ func main() {
 	server.Use(middleware.Logger())
 
 	server.POST("/secret", sekretServer.CreateSecret)
-	server.GET("/secret/:key", sekretServer.FetchSecret)
+	server.GET("/secret/:key", sekretServer.GetSecret)
 
 	server.GET("/version", func(c echo.Context) error {
 		return c.String(http.StatusOK, os.Getenv("ENV_VERSION"))
 	})
 
 	go func() {
-		if err := server.Start(":" + port); err != nil && err != http.ErrServerClosed {
+		if err := server.Start(":" + port); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			server.Logger.Fatal("Shutting down")
 		}
 	}()
 
-	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
+	// Wait for interrupt signal to gracefully shut down the server with a timeout of 10 seconds.
 	// Use a buffered channel to avoid missing signals as recommended for signal.Notify
 	quit := make(chan os.Signal, 1)
 

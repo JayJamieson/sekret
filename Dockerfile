@@ -1,4 +1,4 @@
-FROM golang:1.16-alpine as builder
+FROM golang:1.20-alpine as builder
 
 ARG PKG_NAME=github.com/JayJamieson/sekret
 

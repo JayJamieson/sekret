@@ -1,0 +1,61 @@
+:root {
+  font-family: sans-serif;
+}
+
+.show {
+  visibility: show;
+}
+
+.hide {
+  visibility: hidden;
+}
+
+#secretlink {
+  font-family: monospace;
+}
+
+.content {
+  display:flex;
+  justify-content: center;
+  flex-direction: column;
+  flex-grow: 0;
+  max-width: 650px;
+  margin: 0 auto;
+  text-align: center;
+  gap: 15;
+}
+
+#warning {
+  font-weight: 600;
+}
+
+#create {
+  padding: 15px;
+  font-weight: 400;
+  cursor: pointer;
+  user-select: none;
+}
+
+#passphrase-label {
+  display: flex;
+  gap: 15;
+  align-items: center;
+}
+
+#passphrase {
+  flex: 1 100%;
+  padding: 5px 0;
+}
+
+#ttl-label {
+  display: flex;
+  gap: 15;
+  align-items: center;
+}
+
+#ttl {
+  /* flex: 1 100%; */
+  margin-left: 28px;
+  width: 150px;
+  padding: 5px 0;
+}

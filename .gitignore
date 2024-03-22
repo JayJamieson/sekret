@@ -16,3 +16,7 @@
 
 .vscode
 .idea
+ui/dist
+node_modules
+.parcel-cache
+tmp/

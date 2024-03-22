@@ -1,0 +1,27 @@
+{{define "view"}}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script type="module" src="js/view.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="css/index.css" />
+    <title>Sekret</title>
+  </head>
+  <body>
+    <div class="content">
+      {{if .secret}}
+      <h1>Your Secret</h1>
+      <textarea id="secret" name="content" id="" cols="30" rows="10">{{.secret}}</textarea>
+      <p><span id="warning">Warning</span> this will only be displayed once.</p>
+      {{else}}
+      <h1>Not Found</h1>
+      <p>Secret doesn't exist or has already viewed.</p>
+      {{end}}
+      <a href="/">Create your own secret</a>
+    </div>
+  </body>
+</html>
+
+{{end}}

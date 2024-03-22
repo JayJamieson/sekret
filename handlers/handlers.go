@@ -1,19 +1,18 @@
 package handlers
 
 import (
-	"github.com/JayJamieson/sekret/util"
 	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
 )
 
-type Sekret struct {
+type SecretStore struct {
 	store map[string]SecretData
 }
 
 type SecretData struct {
-	Data      string `json:"data"`
+	Secret    string `json:"secret"`
 	CreatedAt int64  `json:"createdAt"`
 	Owner     string `json:"owner"`
 }
@@ -22,13 +21,17 @@ type createdResponse struct {
 	Name string `json:"name"`
 }
 
-func NewSekret() *Sekret {
-	return &Sekret{
+func New() *SecretStore {
+	return &SecretStore{
 		store: make(map[string]SecretData),
 	}
 }
 
-func (s *Sekret) CreateSecret(c echo.Context) error {
+func (s *SecretStore) Health(c echo.Context) error {
+	return c.String(http.StatusOK, "Ok")
+}
+
+func (s *SecretStore) CreateSecret(c echo.Context) error {
 
 	createdAt := time.Now().Add(time.Hour * time.Duration(24)).UnixNano()
 
@@ -40,10 +43,10 @@ func (s *Sekret) CreateSecret(c echo.Context) error {
 		return err
 	}
 
-	var key string = util.GetRandomName(0)
+	var key string = GetRandomName(0)
 
 	if _, ok := s.store[key]; ok {
-		key = util.GetRandomName(1)
+		key = GetRandomName(1)
 	}
 
 	s.store[key] = *secret
@@ -51,7 +54,18 @@ func (s *Sekret) CreateSecret(c echo.Context) error {
 	return c.JSON(http.StatusAccepted, createdResponse{key})
 }
 
-func (s *Sekret) GetSecret(c echo.Context) error {
+func (s *SecretStore) ViewSecret(c echo.Context) error {
+	key := c.Param("key")
+
+	secret := s.store[key]
+	delete(s.store, key)
+
+	return c.Render(http.StatusOK, "view", map[string]interface{}{
+		"secret": secret.Secret,
+	})
+}
+
+func (s *SecretStore) GetSecret(c echo.Context) error {
 	key := c.Param("key")
 
 	secret, ok := s.store[key]
@@ -66,5 +80,9 @@ func (s *Sekret) GetSecret(c echo.Context) error {
 		return c.NoContent(http.StatusNotFound)
 	}
 
-	return c.JSON(http.StatusOK, secret)
+	if ct, ok := c.Request().Header[http.CanonicalHeaderKey("Content-type")]; ok && ct[0] == "application/json" {
+		return c.JSON(http.StatusOK, secret)
+	}
+
+	return c.Redirect(http.StatusFound, "/")
 }

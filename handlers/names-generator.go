@@ -1,4 +1,4 @@
-package util
+package handlers
 
 // Package namesgenerator generates random names.
 //

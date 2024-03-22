@@ -8,6 +8,10 @@ primary_region = "syd"
 
 [build]
 
+[mounts]
+source="vol_sekret"
+destination="/data"
+
 [http_service]
   internal_port = 8080
   force_https = true

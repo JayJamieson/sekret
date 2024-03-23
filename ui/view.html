@@ -4,24 +4,43 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script type="module" src="js/view.js"></script>
-
     <link rel="stylesheet" type="text/css" href="css/index.css" />
+    <script>
+      //prevent re-submit on refresh
+      if (window.history.replaceState) {
+        window.history.replaceState(null, null, window.location.href);
+      }
+    </script>
     <title>Sekret</title>
   </head>
   <body>
     <div class="content">
-      {{if .secret}}
-      <h1>Your Secret</h1>
-      <textarea id="secret" name="content" id="" cols="30" rows="10">{{.secret}}</textarea>
-      <p><span id="warning">Warning</span> this will only be displayed once.</p>
+      {{if and .secret .show}}
+        <h1>Your Secret</h1>
+        <textarea id="secret" name="content" id="" cols="30" rows="10">{{.secret}}</textarea>
+        {{template "warning"}}
+      {{else if .used}}
+        <h1>Not Found</h1>
+        <p>Secret doesn't exist or has already been viewed.</p>
       {{else}}
-      <h1>Not Found</h1>
-      <p>Secret doesn't exist or has already viewed.</p>
+        <h1>Click show secret</h1>
+        <form
+          class="hide"
+          id="form"
+          action="/secret/{{.key}}"
+          method="post"
+          autocomplete="off">
+          <input type="hidden" name="show" value="show" />
+        </form>
+        <button class="button" type="submit" form="form">Show</button>
+        {{template "warning"}}
       {{end}}
       <a href="/">Create your own secret</a>
     </div>
   </body>
 </html>
+{{end}}
 
+{{block "warning" .}}
+  <p><span id="warning">Warning</span> this will only be displayed once.</p>
 {{end}}

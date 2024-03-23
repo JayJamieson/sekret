@@ -1,24 +1,26 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
 )
 
-type SecretStore struct {
-	store map[string]SecretData
-}
-
 type SecretData struct {
-	Secret    string `json:"secret"`
-	CreatedAt int64  `json:"createdAt"`
-	Owner     string `json:"owner"`
+	Secret    string `json:"secret" form:"secret"`
+	CreatedAt int64
+	Owner     string
 }
 
 type createdResponse struct {
 	Name string `json:"name"`
+	Link string `json:"link"`
+}
+
+type SecretStore struct {
+	store map[string]SecretData
 }
 
 func New() *SecretStore {
@@ -51,18 +53,14 @@ func (s *SecretStore) CreateSecret(c echo.Context) error {
 
 	s.store[key] = *secret
 
-	return c.JSON(http.StatusAccepted, createdResponse{key})
-}
+	// TODO: Handle in content type specific handlers
+	contentType := c.Request().Header.Get(echo.HeaderContentType)
 
-func (s *SecretStore) ViewSecret(c echo.Context) error {
-	key := c.Param("key")
+	if contentType == echo.MIMEApplicationJSON {
+		return c.JSON(http.StatusOK, createdResponse{Name: key, Link: fmt.Sprintf("%s://%s/secret/%s", c.Scheme(), c.Request().Host, key)})
+	}
 
-	secret := s.store[key]
-	delete(s.store, key)
-
-	return c.Render(http.StatusOK, "view", map[string]interface{}{
-		"secret": secret.Secret,
-	})
+	return c.Redirect(http.StatusFound, fmt.Sprintf("/private/%s", key))
 }
 
 func (s *SecretStore) GetSecret(c echo.Context) error {
@@ -80,9 +78,5 @@ func (s *SecretStore) GetSecret(c echo.Context) error {
 		return c.NoContent(http.StatusNotFound)
 	}
 
-	if ct, ok := c.Request().Header[http.CanonicalHeaderKey("Content-type")]; ok && ct[0] == "application/json" {
-		return c.JSON(http.StatusOK, secret)
-	}
-
-	return c.Redirect(http.StatusFound, "/")
+	return c.JSON(http.StatusOK, secret)
 }

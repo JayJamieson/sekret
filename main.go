@@ -48,16 +48,15 @@ func main() {
 	port := os.Getenv("PORT")
 	useOS := len(os.Args) > 1 && os.Args[1] == "live"
 
-	uiFS := getFileSystem(useOS)
-
-	assetHandler := http.FileServer(http.FS(uiFS))
-
 	if port == "" {
 		port = "8080"
 		log.Print("PORT environment variable must be set, defaulted to 8080")
 	}
 
 	server := echo.New()
+
+	uiFS := getFileSystem(useOS)
+	assetHandler := http.FileServer(http.FS(uiFS))
 
 	server.Renderer = &Template{
 		templates: template.Must(template.ParseFS(uiFS, "*.html")),
@@ -67,20 +66,24 @@ func main() {
 
 	server.Logger.SetLevel(log.INFO)
 	server.Use(middleware.Logger())
-
-	server.GET("/", echo.WrapHandler(assetHandler))
+	server.Use(middleware.Secure())
 
 	server.GET("/static/*", echo.WrapHandler(http.StripPrefix("/static/", assetHandler)))
+
+	api := server.Group("/api")
+	api.POST("/secret", handlers.CreateSecret)
+	api.GET("/secret/:key", handlers.GetSecret)
+
+	server.GET("/", handlers.ViewIndex)
+	server.POST("/secret", handlers.CreateSecret)
+	server.GET("/secret/:key", handlers.ViewSecret)
+	server.POST("/secret/:key", handlers.ViewSecret)
+	server.GET("/private/:key", handlers.ViewPrivate)
+
 	server.GET("/health", handlers.Health)
-
-	server.POST("/api/secret", handlers.CreateSecret)
-	server.GET("/api/secret/:key", handlers.GetSecret)
-
 	server.GET("/version", func(c echo.Context) error {
 		return c.String(http.StatusOK, os.Getenv("ENV_VERSION"))
 	})
-
-	server.GET("/secret/:key", handlers.ViewSecret)
 
 	go func() {
 		if err := server.Start(":" + port); err != nil && !errors.Is(err, http.ErrServerClosed) {

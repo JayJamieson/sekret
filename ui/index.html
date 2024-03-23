@@ -1,18 +1,23 @@
+{{define "index"}}
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script type="module" src="js/index.js"></script>
-
     <link rel="stylesheet" type="text/css" href="css/index.css" />
+    <script>
+      //prevent re-submit on refresh
+      if (window.history.replaceState) {
+        window.history.replaceState(null, null, window.location.href);
+      }
+    </script>
     <title>Sekret</title>
   </head>
   <body>
-    <div class="content">
+    <form class="content" method="post" action="/secret" autocomplete="off">
       <h1>Sekret</h1>
       <p>Create a single use link to share passwords, secret messages or a private link.</p>
-      <textarea id="secret" name="content" id="" cols="30" rows="10"></textarea>
+      <textarea id="secret" name="secret" id="" cols="30" rows="10"></textarea>
       <!-- Uncomment for future release -->
       <!-- <label for="passphrase" id="passphrase-label">
         Passphrase:
@@ -35,8 +40,8 @@
         </select>
       </label> -->
 
-      <button id="create" type="button">Create Secret</button>
-      <p class="hide" >Share this link: <span id="secretlink"></span></p>
-    </div>
+      <button class="button" id="create" type="submit">Create Secret</button>
+    </form>
   </body>
 </html>
+{{end}}

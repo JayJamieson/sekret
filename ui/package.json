@@ -5,7 +5,8 @@
   "source": "index.html",
   "scripts": {
     "start": "parcel --public-url=/static *.html",
-    "build": "parcel build --public-url=/static *.html"
+    "build": "parcel build --public-url=/static *.html",
+    "watch": "parcel watch --public-url=/static *.html"
   },
   "keywords": [],
   "author": "",

@@ -22,17 +22,16 @@ Fetch a secret `sekret -fetch sweet_elgamal`
 
 ```bash
 curl --request POST \
-  --url http://localhost:8080/secret \
+  --url http://localhost:8080/api/secret \
   --header 'Content-type: application/json' \
   --data '{
-  "data": "mysecret",
-  "owner": "owner"
+  "secret": "mysecret"
 }'
 ```
 
 ```bash
 curl --request GET \
-  --url http://localhost:8080/secret/sweet_elgamal \
+  --url http://localhost:8080/api/secret/sweet_elgamal \
   --header 'Content-type: application/json'
 ```
 

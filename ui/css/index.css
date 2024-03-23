@@ -8,6 +8,7 @@
 
 .hide {
   visibility: hidden;
+  display: none;
 }
 
 #secretlink {
@@ -30,6 +31,13 @@
 }
 
 #create {
+  padding: 15px;
+  font-weight: 400;
+  cursor: pointer;
+  user-select: none;
+}
+
+.button {
   padding: 15px;
   font-weight: 400;
   cursor: pointer;

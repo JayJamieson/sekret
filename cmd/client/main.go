@@ -45,7 +45,7 @@ func (client *Client) fetch(key string) error {
 		return err
 	}
 
-	fmt.Printf("Secret: %v\n\n", data.Data)
+	fmt.Printf("Secret: %v\n\n", data.Secret)
 
 	return nil
 }

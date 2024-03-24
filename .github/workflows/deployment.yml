@@ -95,3 +95,11 @@ jobs:
           docker tag ${{ steps.prepare.outputs.sekret_image }} ${{ steps.prepare.outputs.sekret_image }}:${{ steps.prepare.outputs.version }}
           docker push ${{ steps.prepare.outputs.sekret_image }}:${{ steps.prepare.outputs.version }}
           echo ::set-output name=image::${{ steps.prepare.outputs.sekret_image }}:${{ steps.prepare.outputs.version }}
+
+      - name: Setup fltctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl deploy --remote-only

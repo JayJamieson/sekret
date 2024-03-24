@@ -20,7 +20,7 @@ Fetch a secret `sekret -fetch sweet_elgamal`
 
 ## Test requests
 
-```bash
+```sh
 curl --request POST \
   --url http://localhost:8080/api/secret \
   --header 'Content-type: application/json' \
@@ -29,7 +29,7 @@ curl --request POST \
 }'
 ```
 
-```bash
+```sh
 curl --request GET \
   --url http://localhost:8080/api/secret/sweet_elgamal \
   --header 'Content-type: application/json'
@@ -40,16 +40,10 @@ curl --request GET \
 1. Install [flyctl](https://fly.io/docs/hands-on/install-flyctl/)
 2. `flyctl launch`
 
-## Hosting on heroku
+## Build container image
 
-```bash
-docker pull jayjamieson/sekret:<some version>
-// or
-docker build -tag sekret .
-
-docker tag <docker hub name>/sekret:<some version> registry.heroku.com/<heroku project>/web
-docker push registry.heroku.com/<heroku project>/web
-heroku container:release web -a <heroku project>
+```sh
+docker build -tag <tag name here> .
 ```
 
 ## TODO
@@ -64,6 +58,6 @@ CLI
 Server
 
 - [x] Add simple UI to create/view secrets
-- [ ] Add secret key encryption
+- [ ] Add secret key encryption using passphrase
 - [ ] Add storage backend support e.g. Redis, SQLite
 - [ ] Add configuration support for backend storage, encryption secret

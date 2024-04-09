@@ -18,15 +18,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install NodeJS
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-
-      - name: Code Checkout
-        uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v3
         name: Install pnpm
@@ -77,8 +74,8 @@ jobs:
         id: prepare
         run: |
           ORG_NAME="jayjamieson"
-          echo ::set-output name=sekret_image::docker.io/${ORG_NAME}/sekret
-          echo ::set-output name=version::$(git rev-parse --short HEAD).${GITHUB_RUN_NUMBER}
+          echo "sekret_image=docker.io/${ORG_NAME}/sekret" >> $GITHUB_OUTPUT
+          echo "version=$(git rev-parse --short HEAD).${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
 
       - name: Echo Image name
         run: echo ${{ steps.prepare.outputs.sekret_image }}:${{ steps.prepare.outputs.version }}
@@ -94,7 +91,7 @@ jobs:
         run: |
           docker tag ${{ steps.prepare.outputs.sekret_image }} ${{ steps.prepare.outputs.sekret_image }}:${{ steps.prepare.outputs.version }}
           docker push ${{ steps.prepare.outputs.sekret_image }}:${{ steps.prepare.outputs.version }}
-          echo ::set-output name=image::${{ steps.prepare.outputs.sekret_image }}:${{ steps.prepare.outputs.version }}
+          echo "image=${{ steps.prepare.outputs.sekret_image }}:${{ steps.prepare.outputs.version }}" >> $GITHUB_OUTPUT
 
       - name: Setup fltctl
         uses: superfly/flyctl-actions/setup-flyctl@master

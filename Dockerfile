@@ -1,20 +1,15 @@
 FROM golang:1.22-alpine as builder
 
-ARG PKG_NAME=github.com/JayJamieson/sekret
+COPY . /go/src/github.com/JayJamieson/sekret
+WORKDIR /go/src/github.com/JayJamieson/sekret
 
-RUN apk update && apk add --no-cache git ca-certificates && update-ca-certificates
-RUN apk add build-base
+RUN apk update && apk add build-base && go mod download
 
-COPY . /go/src/${PKG_NAME}
+RUN CGO_ENABLED=1 GOOS=linux go build -ldflags='-s -w -linkmode external -extldflags "-static"' -o /sekret
 
-RUN cd /go/src/${PKG_BASE}/${PKG_NAME} && \
-    CGO_ENABLED=1 GOOS=linux go build -ldflags='-s -w -linkmode external -extldflags "-static"' -o /sekret
+FROM gcr.io/distroless/static
 
-FROM scratch
-
-COPY --from=builder /sekret /sekret
-
-ENV PORT=8080
+COPY --from=builder --chown=nonroot:nonroot /sekret /sekret
 
 ARG VERSION="local"
 ENV ENV_VERSION=$VERSION

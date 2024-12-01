@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -15,13 +17,16 @@ func (s *SecretStore) ViewIndex(c echo.Context) error {
 func (s *SecretStore) ViewSecret(c echo.Context) error {
 	key := c.Param("key")
 	data, _ := c.FormParams()
-	secret, ok := s.store[key]
 
-	if !ok {
+	secret, err := s.get(key)
+
+	errNoRows := err != nil && errors.Is(err, sql.ErrNoRows)
+
+	if errNoRows {
 		return c.Render(http.StatusOK, "view", map[string]interface{}{
 			"key":    key,
 			"show":   data.Has("show"),
-			"used":   !ok,
+			"used":   errNoRows,
 			"secret": "",
 			"data":   data,
 		})
@@ -36,7 +41,7 @@ func (s *SecretStore) ViewSecret(c echo.Context) error {
 		})
 	}
 
-	delete(s.store, key)
+	s.remove(key)
 
 	if secret.CreatedAt < time.Now().UnixNano() {
 		return c.Render(http.StatusOK, "view", map[string]interface{}{
@@ -59,10 +64,14 @@ func (s *SecretStore) ViewSecret(c echo.Context) error {
 func (s *SecretStore) ViewPrivate(c echo.Context) error {
 	key := c.Param("key")
 
-	_, ok := s.store[key]
+	_, err := s.get(key)
 
-	if !ok {
-		return c.Redirect(http.StatusFound, "/")
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return c.Redirect(http.StatusFound, "/")
+		}
+
+		return err
 	}
 
 	return c.Render(http.StatusOK, "private", map[string]interface{}{

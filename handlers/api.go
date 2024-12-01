@@ -45,26 +45,26 @@ func New(url string) (*SecretStore, error) {
 	}, nil
 }
 
-func (s *SecretStore) set(data *SecretData) error {
+func (s *SecretStore) set(data *SecretData) (string, error) {
 	tx, err := s.db.Begin()
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	var name string = GetRandomName(0)
 
-	createSql := "INSERT INTO secret(name, value, ttl, created_at, owner) VALUES(?, ?, ?, ?, ?)"
-	_, err = tx.Exec(createSql, name, data.Secret, 0, data.CreatedAt, data.Owner)
+	createSql := "INSERT INTO secret(name, value, created_at, owner) VALUES(?, ?, ?, ?)"
+	_, err = tx.Exec(createSql, name, data.Secret, data.CreatedAt, data.Owner)
 
 	if err != nil {
 		txErr := tx.Rollback()
-		return errors.Join(err, txErr)
+		return "", errors.Join(err, txErr)
 	}
 
 	tx.Commit()
 
-	return nil
+	return name, nil
 }
 
 func (s *SecretStore) get(name string) (*SecretData, error) {
@@ -120,13 +120,11 @@ func (s *SecretStore) CreateSecret(c echo.Context) error {
 		return err
 	}
 
-	var key string = GetRandomName(0)
+	key, err := s.set(secret)
 
-	if _, ok := s.store[key]; ok {
-		key = GetRandomName(1)
+	if err != nil {
+		return err
 	}
-
-	s.store[key] = *secret
 
 	// TODO: Handle in content type specific handlers
 	contentType := c.Request().Header.Get(echo.HeaderContentType)
@@ -141,13 +139,14 @@ func (s *SecretStore) CreateSecret(c echo.Context) error {
 func (s *SecretStore) GetSecret(c echo.Context) error {
 	key := c.Param("key")
 
-	secret, ok := s.store[key]
+	secret, err := s.get(key)
+	errNoRows := err != nil && errors.Is(err, sql.ErrNoRows)
 
-	if !ok {
+	if errNoRows {
 		return c.NoContent(http.StatusNotFound)
 	}
 
-	delete(s.store, key)
+	s.remove(key)
 
 	if secret.CreatedAt < time.Now().UnixNano() {
 		return c.NoContent(http.StatusNotFound)

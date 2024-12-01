@@ -1,41 +1,103 @@
 {{define "view"}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="css/index.css" />
-    <script>
-      //prevent re-submit on refresh
-      if (window.history.replaceState) {
-        window.history.replaceState(null, null, window.location.href);
-      }
-    </script>
+    <script src="index.js" type="module"></script>
+
     <title>Sekret</title>
   </head>
-  <body>
-    <div class="content">
+  <body
+    class="min-h-screen flex items-center justify-center p-4 bg-white text-gray-900 dark:bg-gray-900 dark:text-white"
+  >
+    <div class="absolute top-4 right-4">{{template "themeToggle"}}</div>
+
+    <div x-data="{
+      secret: '{{.secret}}',
+      copied: false,
+      timeout: null,
+      copy() {
+          $clipboard(this.secret)
+
+          this.copied = true
+
+          clearTimeout(this.timeout)
+
+          this.timeout = setTimeout(() => {
+          this.copied = false
+          }, 2000)
+        }
+      }"
+      class="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl space-y-6 border border-gray-200 dark:border-gray-700"
+    >
       {{if and .secret .show}}
-        <h1>Your Secret</h1>
-        <textarea id="secret" name="content" id="" cols="30" rows="10">{{.secret}}</textarea>
-        {{template "warning"}}
+      <h1 class="text-3xl font-bold text-center mb-4 dark:text-white">
+        View Secret
+      </h1>
+      <textarea
+        id="secret"
+        name="content"
+        x-text="secret"
+        cols="30"
+        rows="10"
+        readonly
+        class="w-full px-3 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+      ></textarea
+      >
+
+      <div class="text-center text-sm text-gray-600 dark:text-gray-400">
+        <p>This secret will self-destruct after viewing</p>
+      </div>
+
+      <button
+        x-on:click="copy"
+        x-text="copied ? `Copied` : `Copy Secret`"
+        class="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-700 dark:hover:bg-blue-800"
+      >
+        Copy Secret
+      </button>
+
       {{else if .used}}
-        <h1>Not Found</h1>
-        <p>Secret doesn't exist or has already been viewed.</p>
+      <h1
+        class="text-3xl font-bold text-center mb-4 text-red-600 dark:text-red-400"
+      >
+        Not Found
+      </h1>
+      <p class="text-center text-gray-600 dark:text-gray-300 mb-6">
+        Secret doesn't exist or has already been viewed.
+      </p>
       {{else}}
-        <h1>Click show secret</h1>
-        <form
-          class="hide"
-          id="form"
-          action="/secret/{{.key}}"
-          method="post"
-          autocomplete="off">
-          <input type="hidden" name="show" value="show" />
-        </form>
-        <button class="button" type="submit" form="form">Show</button>
-        {{template "warning"}}
-      {{end}}
-      <a href="/">Create your own secret</a>
+      <h1 class="text-3xl font-bold text-center mb-4 dark:text-white">
+       View Secret
+      </h1>
+      <form
+        class="hide"
+        id="form"
+        action="/secret/{{.key}}"
+        method="post"
+        autocomplete="off"
+        class="space-y-4"
+      >
+        <input type="hidden" name="show" value="show" />
+      </form>
+      <button
+        class="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-700 dark:hover:bg-blue-800"
+        type="submit"
+        form="form"
+      >
+        Show
+      </button>
+      {{template "warning"}} {{end}}
+      <div class="text-center mt-4">
+        <a
+          href="/"
+          class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-500 transition-colors duration-300 text-sm"
+        >
+          Create your own secret
+        </a>
+      </div>
     </div>
   </body>
 </html>

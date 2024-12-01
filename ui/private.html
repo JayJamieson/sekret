@@ -1,17 +1,58 @@
 {{define "private"}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Private Secret</title>
     <link rel="stylesheet" type="text/css" href="css/index.css" />
-
-    <title>Private</title>
+    <script src="index.js" type="module"></script>
   </head>
-  <body>
-    <div class="content">
-      <h1>Share this secret</h1>
-      <p>Share this link: <span id="secretlink">{{.link}}</span></p>
+  <body
+    class="min-h-screen flex items-center justify-center p-4 bg-white dark:bg-gray-900"
+  >
+    <div class="absolute top-4 right-4">{{template "themeToggle"}}</div>
+
+    <div
+      class="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl space-y-6 border border-gray-200 dark:border-gray-700"
+      x-data="{
+        link: '{{.link}}',
+        copied: false,
+        timeout: null,
+        copy() {
+            $clipboard(this.link)
+
+            this.copied = true
+
+            clearTimeout(this.timeout)
+
+            this.timeout = setTimeout(() => {
+            this.copied = false
+            }, 2000)
+          }
+        }"
+    >
+      <h1 class="text-3xl font-bold text-center mb-4 dark:text-white">
+        Share
+      </h1>
+      <div class="rounded-lg">
+        <p class="text-gray-700 dark:text-gray-300 mb-2">Share this link:</p>
+        <div
+          class="bg-white dark:bg-gray-700 p-3 rounded-lg break-all text-sm text-gray-800 dark:text-white border border-gray-200 dark:border-gray-600"
+        >
+          <span id="secretlink" x-text="link"></span>
+        </div>
+      </div>
+      <div class="text-center text-sm text-gray-600 dark:text-gray-400">
+        <p>This link will self-destruct after being viewed</p>
+      </div>
+      <button
+        x-on:click="copy"
+        x-text="copied ? `Copied` : `Copy Link`"
+        class="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-700 dark:hover:bg-blue-800"
+      >
+        Copy Link
+      </button>
     </div>
   </body>
 </html>

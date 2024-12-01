@@ -46,6 +46,7 @@ func getFileSystem(useOS bool) fs.FS {
 
 func main() {
 	port := os.Getenv("PORT")
+	dbURI := os.Getenv("DB_URI")
 	useOS := len(os.Args) > 1 && os.Args[1] == "live"
 
 	if port == "" {
@@ -62,7 +63,12 @@ func main() {
 		templates: template.Must(template.ParseFS(uiFS, "*.html")),
 	}
 
-	handlers := handlers.New()
+	handlers, err := handlers.New(dbURI)
+
+	if err != nil {
+		log.Printf("%v\n", err)
+		os.Exit(1)
+	}
 
 	server.Logger.SetLevel(log.INFO)
 	server.Use(middleware.Logger())

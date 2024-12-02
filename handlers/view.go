@@ -54,10 +54,13 @@ func (s *SecretStore) ViewSecret(c echo.Context) error {
 	}
 
 	return c.Render(http.StatusOK, "view", map[string]interface{}{
-		"key":    key,
-		"show":   data.Has("show"),
-		"secret": secret.Secret,
-		"data":   data,
+		"key":         key,
+		"show":        data.Has("show"),
+		"secret":      secret.Secret,
+		"iv":          secret.IV,
+		"salt":        secret.Salt,
+		"hasPassword": secret.HasPassword,
+		"data":        data,
 	})
 }
 

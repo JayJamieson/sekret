@@ -14,9 +14,11 @@ import (
 )
 
 type SecretData struct {
-	Secret    string `json:"secret" form:"secret"`
-	CreatedAt int64
-	Owner     string
+	Secret      string `json:"secret" form:"secret"`
+	IV          string `json:"iv" form:"iv"`
+	Salt        string `json:"salt" form:"salt"`
+	HasPassword bool   `json:"hasPassword" form:"hasPassword"`
+	CreatedAt   int64
 }
 
 type createdResponse struct {
@@ -25,8 +27,7 @@ type createdResponse struct {
 }
 
 type SecretStore struct {
-	store map[string]SecretData
-	db    *sql.DB
+	db *sql.DB
 }
 
 func New(url string) (*SecretStore, error) {
@@ -40,8 +41,7 @@ func New(url string) (*SecretStore, error) {
 	db.SetConnMaxIdleTime(9)
 
 	return &SecretStore{
-		store: make(map[string]SecretData),
-		db:    db,
+		db: db,
 	}, nil
 }
 
@@ -54,8 +54,8 @@ func (s *SecretStore) set(data *SecretData) (string, error) {
 
 	var name string = GetRandomName(0)
 
-	createSql := "INSERT INTO secret(name, value, created_at, owner) VALUES(?, ?, ?, ?)"
-	_, err = tx.Exec(createSql, name, data.Secret, data.CreatedAt, data.Owner)
+	createSql := "INSERT INTO secret(name, value, created_at, iv, salt, has_password) VALUES(?, ?, ?, ?, ?, ?)"
+	_, err = tx.Exec(createSql, name, data.Secret, data.CreatedAt, data.IV, data.Salt, data.HasPassword)
 
 	if err != nil {
 		txErr := tx.Rollback()
@@ -68,7 +68,7 @@ func (s *SecretStore) set(data *SecretData) (string, error) {
 }
 
 func (s *SecretStore) get(name string) (*SecretData, error) {
-	fetchSql := "SELECT value, created_at, owner FROM secret WHERE name = ?"
+	fetchSql := "SELECT value, iv, salt, created_at, has_password FROM secret WHERE name = ?"
 	row := s.db.QueryRow(fetchSql, name)
 
 	if err := row.Err(); err != nil {
@@ -76,7 +76,7 @@ func (s *SecretStore) get(name string) (*SecretData, error) {
 	}
 
 	var secret SecretData
-	err := row.Scan(&secret.Secret, &secret.CreatedAt, &secret.Owner)
+	err := row.Scan(&secret.Secret, &secret.IV, &secret.Salt, &secret.CreatedAt, &secret.HasPassword)
 
 	if err != nil {
 		return nil, err

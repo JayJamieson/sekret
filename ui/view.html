@@ -14,10 +14,27 @@
   >
     <div class="absolute top-4 right-4">{{template "themeToggle"}}</div>
 
-    <div x-data="{
+    <div
+      x-data="{
       secret: '{{.secret}}',
+      iv: '{{.iv}}',
+      salt: '{{.salt}}',
+      passphrase: '',
+      hasPassword: '{{.hasPassword}}',
+      decrypted: false,
       copied: false,
+      hasError: false,
       timeout: null,
+      async decrypt() {
+        try {
+          this.secret = await decrypt({iv: this.iv, salt: this.salt, cipher: this.secret}, this.passphrase)
+        } catch(e) {
+          this.hasError = true
+          this.decrypted = false;
+        }
+
+        this.decrypted = !this.hasError;
+      },
       copy() {
           $clipboard(this.secret)
 
@@ -44,14 +61,39 @@
         rows="10"
         readonly
         class="w-full px-3 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-      ></textarea
-      >
+      ></textarea>
 
       <div class="text-center text-sm text-gray-600 dark:text-gray-400">
         <p>This secret will self-destruct after viewing</p>
       </div>
 
+      <label
+        for="passphrase"
+        class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+      >
+        Passphrase:
+        <input
+          :class="hasPassword ? '' : 'hidden'"
+          x-on:focus="hasError = false"
+          id="passphrase"
+          type="password"
+          x-model="passphrase"
+          placeholder="Enter an optional passphrase"
+          class="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+        />
+      </label>
+
+      <span :class="hasError ? '' : 'hidden' " class="text-red-600 dark:text-red-400">Invalid password</span>
       <button
+        :class="!decrypted ? '' : 'hidden'"
+        x-on:click="decrypt"
+        class="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-700 dark:hover:bg-blue-800"
+      >
+        Decrypt Secret
+      </button>
+
+      <button
+        :class="decrypted ? '' : 'hidden'"
         x-on:click="copy"
         x-text="copied ? `Copied` : `Copy Secret`"
         class="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-700 dark:hover:bg-blue-800"
@@ -70,7 +112,7 @@
       </p>
       {{else}}
       <h1 class="text-3xl font-bold text-center mb-4 dark:text-white">
-       View Secret
+        View Secret
       </h1>
       <form
         class="hide"
@@ -87,7 +129,7 @@
         type="submit"
         form="form"
       >
-        Show
+        Reveal
       </button>
       {{template "warning"}} {{end}}
       <div class="text-center mt-4">
